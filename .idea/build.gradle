@@ -1,0 +1,60 @@
+plugins {
+    id 'java-library'
+}
+
+group 'allure.notifications'
+version '4.2.0'
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    def lombok = '1.18.24'
+    def slf4j = '1.7.36'
+
+    annotationProcessor("org.projectlombok:lombok:$lombok")
+    compileOnly("org.projectlombok:lombok:$lombok")
+    implementation("org.slf4j:slf4j-log4j12:$slf4j")  // SLF4J binding for Log4J 1.2
+    implementation("org.slf4j:jul-to-slf4j:$slf4j")   // Java Util Logging -> SLF4J
+    implementation("org.slf4j:jcl-over-slf4j:$slf4j") // commons-logging -> SLF4J
+    implementation('com.sun.mail:javax.mail:1.6.2')
+    implementation('com.konghq:unirest-java:3.13.10')
+    implementation('org.freemarker:freemarker:2.3.31')
+    implementation('org.knowm.xchart:xchart:3.8.1')
+    implementation('com.jayway.jsonpath:json-path:2.7.0')
+    implementation('commons-io:commons-io:2.11.0')
+    implementation('org.apache.commons:commons-lang3:3.12.0')
+
+    testImplementation('org.junit.jupiter:junit-jupiter:5.9.0')
+    testImplementation('org.springframework:spring-test:5.3.22') {
+        exclude module: 'spring-jcl' // Use jcl-over-slf4j bridge instead
+    }
+    testImplementation('org.mockito:mockito-junit-jupiter:4.6.1')
+}
+
+configurations.all {
+    exclude module: 'commons-logging' // Use jcl-over-slf4j bridge instead
+}
+
+tasks.withType(JavaCompile) {
+    System.getProperties()
+    options.encoding = 'UTF-8'
+}
+tasks.named('test') {
+    useJUnitPlatform()
+}
+
+jar {
+    manifest {
+        attributes(
+                'Main-Class': 'guru.qa.allure.notifications.Application'
+        )
+    }
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+    duplicatesStrategy = DuplicatesStrategy.WARN
+}
